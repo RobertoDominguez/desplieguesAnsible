@@ -16,7 +16,7 @@ service sshd restart
 
 
 ====================SERVIDOR==============================
-#recomendable hacer todo como root "para el laboratorio"
+#recomendable hacer todo como root "para pruebas"
 sudo su
 
 apt install software-properties-common
@@ -103,6 +103,34 @@ https://stackoverflow.com/questions/18333103/ubuntu-11-10-wont-install-nginx-due
 ====================SERVIDOR==============================
 
 
+===========================COMPOSER====================
 
+sudo ansible-galaxy install geerlingguy.composer
+sudo apt install composer
 
+==================================================
+
+========================LARAVEL==========================
+sudo 2enmod rewrite
+
+sudo nano /etc/apache2/apache2.conf
+	AllowOverride All
+
+/var/www/html
+-----------------------------------------------
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+        DirectoryIndex index.php
+
+        RewriteEngine On
+        RewriteRule ^$ public/index.php [L]
+        RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+
+</IfModule>
+
+-----------------------------------------------------
+=============================================================
 
