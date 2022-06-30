@@ -1,0 +1,107 @@
+172.29.137.82  cliente
+172.29.143.139 servidor
+
+====================CLIENTE==============================
+#habilitar usuario root en el cliente
+sudo -i
+passwd
+exit
+
+sudo nano /etc/ssh/sshd_config
+PermitRootLogin yes
+service sshd restart
+
+====================CLIENTE==============================
+
+
+====================SERVIDOR==============================
+#recomendable hacer todo como root "para el laboratorio"
+sudo su
+
+apt install software-properties-common
+apt update
+apt install ansible
+ansible --version
+
+#crear llaves ssh
+cd
+ssh-keygen
+
+#copiar las llaves ssh del servidor al cliente
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.29.137.82
+
+#solo si es necesario crear directorio y archivo
+sudo mkdir /etc/ansible
+sudo nano /etc/ansible/hosts
+------------------------------------------------------
+[servers]
+server1 ansible_host=172.29.137.82
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+------------------------------------------------------
+
+ansible -m ping all
+
+#si no estas logeado como root puedes cambiar de usuario
+ansible all -m ping -u root
+
+
+ansible all -a hostname
+
+ansible all -m service -a "name=nginx"
+
+#Prueba de ansible
+nano ping.yaml
+
+------------------------------------------------------
+#Playbook
+- hosts: all
+  tasks:
+  - name: Hacer ping
+    ping:
+-----------------------------------------------------
+
+ansible-playbook ping.yaml
+
+
+
+-----------------------LABORATORIO----------------------------
+- hosts: all
+  become: yes
+  tasks:
+  - name: Agregar la key de Grafana
+    apt_key:
+      url: https://packages.grafana.com/gpg.key
+      state: present
+  - name: Agregar el repositorio de grafana
+    apt_repository:
+      repo: 'deb https://packages.grafana.com/oss/deb stable main'
+      state: present
+      filename: grafana
+      update_cache: yes
+  - name: Instalar Grafana
+    apt: name=grafana state=latest
+  - name: Verificar Grafana Server activo y en arranque
+    service: name=grafana-server state=started enabled=yes
+
+  - name: Update
+    apt: update_cache=yes cache_valid_time=3600
+  - name: Upgrade paquetes apt
+    apt: upgrade=dist force_apt_get=yes
+  - name: Instalar Nginx
+    apt: name=nginx state=latest
+  - name: Verificar Nginx activo y en arranque
+    service: name=nginx state=started enabled=yes
+
+-----------------------------------------------------
+
+https://stackoverflow.com/questions/18333103/ubuntu-11-10-wont-install-nginx-due-to-dependecy-failure-libssl1-0-0
+
+====================SERVIDOR==============================
+
+
+
+
+
