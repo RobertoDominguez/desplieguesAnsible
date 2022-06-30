@@ -1,0 +1,49 @@
+- hosts: all
+  vars:
+    db_user: roberto
+    db_name: dbreservas
+    db_password: sesamo
+
+  tasks:
+    - name: Instalar dependencias para PostgreSQL
+      apt: name={{ item }} update_cache=true state=latest
+      with_items:
+      - bash
+      - openssl
+      - libssl-dev
+      - libssl-doc
+
+    - name: Instalar PostgreSQL
+      apt: name={{ item }} update_cache=true state=present
+      with_items:
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+      - python3-psycopg2
+
+    - name: Asegurarse que el servicio de postgresql este corriendo
+      service: name=postgresql state=started enabled=yes
+
+    - name: Crea la base de datos especificada en vars
+      become: true
+      become_user: postgres
+      postgresql_db: name={{ db_name }}
+        template='template0'
+        state=present
+
+    - name: Asegura que el usuario tenga acceso a la db
+      become: true
+      become_user: postgres
+      postgresql_user: db={{ db_name }}
+        name={{ db_user }}
+        password={{ db_password }}
+        priv=ALL
+        state=present
+
+    - name: Asegura que el usuario no tenga permisos innecesarios
+      become: true
+      become_user: postgres
+      postgresql_user: name={{ db_user }}
+        role_attr_flags=NOSUPERUSER,NOCREATEDB
+        state=present
+

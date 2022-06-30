@@ -1,0 +1,52 @@
+- hosts: all
+  become: yes
+  tasks:
+  - name: Update
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: Upgrade paquetes apt
+    apt: upgrade=dist force_apt_get=yes
+
+  - name: Instalar Apache2
+    apt: name=apache2 state=latest
+  - name: Verificar Apache2 activo y en arranque
+    service: name=apache2 state=started enabled=yes
+
+  - name: Instalar Git
+    apt: name=git state=latest
+
+  - name: Installation install software-properties-common
+    apt: name=software-properties-common
+
+  - name: "Repositorio PHP"
+    apt_repository:
+        repo="ppa:ondrej/php"
+
+  - name: Installacion PHP 8.1
+    apt: name=php8.1 state=present
+
+  - name: Instalar paquetes necesarios
+    apt:
+      pkg:
+        - php8.1-mysql
+        - php8.1-cli
+        - php8.1-opcache
+        - php8.1-readline
+        - php8.1-bcmath
+        - php8.1-curl
+        - php8.1-cgi
+        - php8.1-xsl
+        - php8.1-cgi
+        - php8.1-gd
+        - php8.1-mbstring
+        - php8.1-zip
+        - php8.1-xmlrpc
+        - php8.1-xml
+        - php8.1-soap
+        - php8.1-intl
+        - libapache2-mod-php
+        - php8.1-pgsql
+        - php-common
+      state: present
+      update_cache: yes
+
