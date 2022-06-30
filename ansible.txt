@@ -8,6 +8,7 @@ passwd
 exit
 
 sudo nano /etc/ssh/sshd_config
+PasswordAuthentication yes
 PermitRootLogin yes
 service sshd restart
 
@@ -55,7 +56,7 @@ ansible all -m service -a "name=nginx"
 #Prueba de ansible
 nano ping.yaml
 
-------------------------------------------------------
+-------------------------PRUEBA-----------------------------
 #Playbook
 - hosts: all
   tasks:
@@ -67,7 +68,7 @@ ansible-playbook ping.yaml
 
 
 
------------------------LABORATORIO----------------------------
+-----------------------EJEMPLO----------------------------
 - hosts: all
   become: yes
   tasks:
