@@ -1,0 +1,88 @@
+========================LARAVEL==========================
+sudo 2enmod rewrite
+
+sudo nano /etc/apache2/apache2.conf
+-----------------------
+<Directory /var/www/>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+</Directory>
+-----------------------
+
+#Eliminamos el proyecto por defecto de apache2
+cd /var/www
+rm -R html
+
+#Clonamos el repositorio de nuestro proyecto
+git clone https://github.com/RobertoDominguez/TallerDeLaravel
+
+#renombramos la carpeta por html
+mv TallerDeLaravel/ html
+
+#vamos a la carpeta donde se encuentra el proyecto
+#configurar las variables de entorno
+cp .env.example .env
+nano .env
+#ejecutamos los comandos para correr el proyecto
+composer install
+php artisan key:generate
+php artisan storage:link
+php artisan cache:clear
+php artisan config:cache
+php artisan config:clear
+#Damos permisos al acceso publico de storage
+sudo chmod -R 777 storage
+
+#Ejecutamos las migraciones de la db
+php artisan migrate:fresh --seed
+
+cd /var/www/html
+
+nano .htaccess
+-----------------------------------------------------------
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+        DirectoryIndex index.php
+
+        RewriteEngine On
+        RewriteRule ^$ public/index.php [L]
+        RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+
+</IfModule>
+
+-----------------------------------------------------------
+
+cd /var/www/html/public
+
+nano .htaccess
+-----------------------------------------------------------
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+    RewriteEngine On
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.)/$ /$1 [L,R=301]
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule . - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+-------------------------------------------------------------------
+
+#reiniciamos el servicio de apache2
+systemctl restart apache2
+
+=============================================================

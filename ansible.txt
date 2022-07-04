@@ -8,9 +8,11 @@ passwd
 exit
 
 sudo nano /etc/ssh/sshd_config
+-----------------------------
 PasswordAuthentication yes
 PermitRootLogin yes
-service sshd restart
+-----------------------------
+sudo service sshd restart
 
 ====================CLIENTE==============================
 
@@ -102,6 +104,7 @@ https://stackoverflow.com/questions/18333103/ubuntu-11-10-wont-install-nginx-due
 
 ====================SERVIDOR==============================
 
+https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html
 
 ===========================COMPOSER====================
 
@@ -110,27 +113,4 @@ sudo apt install composer
 
 ==================================================
 
-========================LARAVEL==========================
-sudo 2enmod rewrite
-
-sudo nano /etc/apache2/apache2.conf
-	AllowOverride All
-
-/var/www/html
------------------------------------------------
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews
-    </IfModule>
-
-        DirectoryIndex index.php
-
-        RewriteEngine On
-        RewriteRule ^$ public/index.php [L]
-        RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
-
-</IfModule>
-
------------------------------------------------------
-=============================================================
 
