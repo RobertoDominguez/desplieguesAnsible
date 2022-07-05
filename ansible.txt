@@ -70,7 +70,7 @@ ansible-playbook ping.yaml
 
 
 
------------------------EJEMPLO----------------------------
+-----------------------EJEMPLO (NO HACER PARA DESPLIEGUE)----------------------------
 - hosts: all
   become: yes
   tasks:

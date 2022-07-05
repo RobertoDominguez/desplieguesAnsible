@@ -1,5 +1,5 @@
 ========================LARAVEL==========================
-sudo 2enmod rewrite
+sudo a2enmod rewrite
 
 sudo nano /etc/apache2/apache2.conf
 -----------------------
@@ -21,6 +21,7 @@ git clone https://github.com/RobertoDominguez/TallerDeLaravel
 mv TallerDeLaravel/ html
 
 #vamos a la carpeta donde se encuentra el proyecto
+cd html
 #configurar las variables de entorno
 cp .env.example .env
 nano .env
