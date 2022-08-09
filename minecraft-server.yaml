@@ -1,0 +1,87 @@
+- name: Minecraft 1.19.2 server
+  hosts: all
+  user: root
+  vars: 
+    packages: ['vim', 'wget', 'openjdk-17-jdk','openjdk-17-jre', 'screen']
+    mcs_dir: /root/minecraftserver
+    mcs_jar: minecraft_server.1.9.2.jar
+    mcs_forge_jar: minecraft_server_forge.1.9.2.jar
+    session_name: mcserver
+    min_ram: 2048M
+    max_ram: 2048M
+
+  tasks:
+    - name: Update yum
+      apt: update_cache=yes name='*' state=latest
+
+    - name: Get packages 
+      apt: name={{ item }} state=latest
+      with_items: "{{ packages }}"
+
+    - name: Create minecraftserver dir
+      file: state=directory path={{ mcs_dir }}
+
+    - name: Wget mcserver jar
+      get_url:
+        url: https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar
+        dest: '{{ mcs_dir }}/{{ mcs_jar }}'
+
+    - name: Agree to EULA
+      copy:
+        dest: "{{ mcs_dir }}/eula.txt"
+        content: |
+          eula=true
+
+    - name: Check screen for running sessions
+      shell: screen -ls
+      register: sessions
+      failed_when: sessions.rc == 0 or sessions.rc >= 2
+
+    #- name: Run mcserver
+    #  command: screen -s {{ session_name }} -d -m java -Xmx{{ min_ram }} -Xms{{ max_ram }} -jar {{ mcs_dir }}/{{ mcs_jar }} nogui
+    #  args:
+    #    chdir: '{{ mcs_dir }}'
+    #  when: sessions.stdout.find(session_name) == -1
+
+    - name: Wget mcserver forge jar
+      get_url:
+        url: https://maven.minecraftforge.net/net/minecraftforge/forge/1.19.2-43.0.2/forge-1.19.2-43.0.2-installer.jar
+        dest: '{{ mcs_dir }}/{{ mcs_forge_jar }}'
+
+    - name: Install Forge
+      command: screen -s {{ session_name }} -d -m java -jar {{ mcs_dir }}/{{ mcs_forge_jar }} --installServer
+      args:
+        chdir: '{{ mcs_dir }}'
+
+    - name: Configure Server run.sh
+      copy:
+        dest: "{{ mcs_dir }}/run.sh"
+        content: | 
+          #!/usr/bin/env sh
+          # Forge requires a configured set of both JVM and program arguments.
+          # Add custom JVM arguments to the user_jvm_args.txt
+          # Add custom program arguments {such as nogui} to this file in the next line before the "$@" or
+          #  pass them to this script directly
+          java @user_jvm_args.txt @libraries/net/minecraftforge/forge/1.19.2-43.0.2/unix_args.txt --nogui "$@"
+
+    - name: Configure Server user_jvm_args.txt
+      copy:
+        dest: "{{ mcs_dir }}/user_jvm_args.txt"
+        content: | 
+          # Xmx and Xms set the maximum and minimum RAM usage, respectively.
+          # They can take any number, followed by an M or a G.
+          # M means Megabyte, G means Gigabyte.
+          # For example, to set the maximum to 3GB: -Xmx3G
+          # To set the minimum to 2.5GB: -Xms2500M
+
+          # A good default for a modded server is 4GB.
+          # Uncomment the next line to set it.
+          -Xmx2G
+
+    #- name: Stop mcserver
+    #  command: screen -ls | grep Detached | cut -d. -f1 | awk '{print $1}' | xargs kill
+
+    - name: Run mcserver
+      command: screen -s {{ session_name }} -d -m ./run.sh
+      args:
+        chdir: '{{ mcs_dir }}'
